@@ -1,47 +1,36 @@
 from selenium import webdriver
 import os
-import requests
-from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 driver = webdriver.Firefox(firefox_binary=FirefoxBinary())
 
-def addItem(productCode, quantity):
-    URL_ADD = 'https://www.sophieparis.com/fastadd/index/addtocart'
-    return requests.post(
-        URL_ADD,
-        data={
-            'sku': productCode,
-            'qty': quantity,
-            'product_id': ''
-        }
-    ).json()['url']
+URL_CHECKOUT_CART = "https://www.sophieparis.com/checkout/cart/"
+productCode = "T3246B5"
+numberOfItems = 100
 
+driver.get(URL_CHECKOUT_CART)
 
-def openUrl(url):
-    return driver.get(url).content
+# close dialog
+closeButton = WebDriverWait(driver,     5).until(
+    EC.presence_of_element_located((By.CLASS_NAME, "fancybox-close")))
+closeButton.click()
 
+WebDriverWait(driver,   5).until_not(
+    EC.presence_of_element_located((By.CLASS_NAME, 'fancybox-overlay')))
 
-def getSoup(content):
-    return BeautifulSoup(content, 'html.parser').prettify
+# input product code
+productCodeField = driver.find_element_by_id('productReference')
+productCodeField.send_keys(productCode)
+autoComplete = driver.find_element_by_class_name('autocomplete-suggestion')
+autoComplete.click()
 
+# input number of items
+numberOfItemsField = driver.find_element_by_id('fastAddQty')
+numberOfItemsField.send_keys(str(numberOfItems))
 
-def removeIfExist(fileName):
-    if os.path.exists(fileName):
-        os.remove(fileName)
-
-
-def writeToFile(text):
-    fileName = "source.html"
-    removeIfExist(fileName)
-    file = open(fileName, "w")
-    file.write(str(text))
-    file.close()
-
-
-responseAdd = addItem('T3246B5', 100)
-
-if responseAdd:
-    writeToFile(getSoup(openUrl(responseAdd)))
-else:
-    print('product not found')
+confirmButton = driver.find_element_by_id(
+    'btnSubmitFastAddToCart').find_element_by_class_name('button')
+confirmButton.click()
