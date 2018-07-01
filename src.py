@@ -31,6 +31,18 @@ autoComplete.click()
 numberOfItemsField = driver.find_element_by_id('fastAddQty')
 numberOfItemsField.send_keys(str(numberOfItems))
 
+# click button
 confirmButton = driver.find_element_by_id(
     'btnSubmitFastAddToCart').find_element_by_class_name('button')
 confirmButton.click()
+
+messages = WebDriverWait(driver,   5).until(
+    EC.presence_of_element_located((By.CLASS_NAME, 'messages'))
+)
+try:
+    messages.find_element_by_class_name('success-msg')
+    driver.delete_all_cookies()
+    driver.get(URL_CHECKOUT_CART)
+except Exception as e:
+    print(e)
+    complete = 'failed'
