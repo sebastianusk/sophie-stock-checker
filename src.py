@@ -4,13 +4,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 
-driver = webdriver.Firefox(firefox_binary=FirefoxBinary())
+
+driver = webdriver.Chrome()
 
 URL_CHECKOUT_CART = "https://www.sophieparis.com/checkout/cart/"
 
 
 def checkProduct(productCode, amount):
+    print(str(productCode) + str(amount))
     driver.delete_all_cookies()
     driver.get(URL_CHECKOUT_CART)
 
@@ -25,17 +28,22 @@ def checkProduct(productCode, amount):
     # input product code
     productCodeField = driver.find_element_by_id('productReference')
     productCodeField.send_keys(productCode)
-    autoComplete = driver.find_element_by_class_name('autocomplete-suggestion')
-    autoComplete.click()
-
+    productCodeField.send_keys(Keys.TAB)
+    driver.implicitly_wait(1)
     # input number of items
     numberOfItemsField = driver.find_element_by_id('fastAddQty')
+    numberOfItemsField.clear()
     numberOfItemsField.send_keys(str(amount))
-
+    driver.implicitly_wait(1)
     # click button
     confirmButton = driver.find_element_by_id(
         'btnSubmitFastAddToCart').find_element_by_class_name('button')
     confirmButton.click()
+    driver.implicitly_wait(1)
+    try:
+        driver.find_element_by_class_name('messages')
+    except Exception:
+        checkProduct(productCode, amount)
 
     try:
         driver.find_element_by_class_name('page-title')
@@ -46,8 +54,11 @@ def checkProduct(productCode, amount):
 
 def checkRecursively(productCode, min, max):
     mid = (max + min) // 2
-    check = checkProduct(productCode, mid)
-    print(f'min: {min}, mid: {mid}, max: {max}, check: {check}')
+    try:
+        check = checkProduct(productCode, mid)
+    except Exception as e:
+        print(str(e))
+        return 0
     if min == mid:
         return min
     if check:
@@ -56,5 +67,18 @@ def checkRecursively(productCode, min, max):
         return checkRecursively(productCode, min, mid)
 
 
-result = checkRecursively("T3246B5", 0, 9999)
-print(result)
+OUTPUT_FILE = "output.txt"
+
+if os.path.exists(OUTPUT_FILE):
+    os.remove(OUTPUT_FILE)
+
+output = open(OUTPUT_FILE, "w")
+
+with open('input.txt') as f:
+    lines = f.readlines()
+    for line in lines:
+        result = checkRecursively(line.rstrip(), 0, 9999)
+        output.write(f'{line.rstrip()} amount: {result} \n')
+
+output.close()
+driver.close()

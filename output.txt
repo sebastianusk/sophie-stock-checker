@@ -1,0 +1,14 @@
+T3246B5
+ amount: 1431 
+T4152P3
+ amount: 303 
+T3377M2
+ amount: 1238 
+T3379M2
+ amount: 1194 
+T4142N1
+ amount: 1941 
+T4309B5
+ amount: 461 
+STLSP
+ amount: 1713 
