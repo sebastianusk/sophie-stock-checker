@@ -11,47 +11,12 @@ from selenium.webdriver.common.keys import Keys
 
 
 driver = webdriver.Chrome()
-
+driver.implicitly_wait(1)
 URL_CHECKOUT_CART = "https://www.sophieparis.com/checkout/cart/"
 
 
 def checkProduct(productCode, amount):
-    driver.delete_all_cookies()
-    driver.get(URL_CHECKOUT_CART)
-
-    # close dialog
-    closeButton = WebDriverWait(driver,     5).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "fancybox-close")))
-    closeButton.click()
-
-    WebDriverWait(driver,   5).until_not(
-        EC.presence_of_element_located((By.CLASS_NAME, 'fancybox-overlay')))
-
-    # input product code
-    productCodeField = driver.find_element_by_id('productReference')
-    productCodeField.send_keys(productCode)
-    productCodeField.send_keys(Keys.TAB)
-    driver.implicitly_wait(1)
-    # input number of items
-    numberOfItemsField = driver.find_element_by_id('fastAddQty')
-    numberOfItemsField.clear()
-    numberOfItemsField.send_keys(str(amount))
-    driver.implicitly_wait(1)
-    # click button
-    confirmButton = driver.find_element_by_id(
-        'btnSubmitFastAddToCart').find_element_by_class_name('button')
-    confirmButton.click()
-    driver.implicitly_wait(1)
-    try:
-        driver.find_element_by_class_name('messages')
-    except Exception:
-        checkProduct(productCode, amount)
-
-    try:
-        driver.find_element_by_class_name('page-title')
-        return True
-    except Exception:
-        return False
+    return False
 
 
 def checkRecursively(productCode, min, max):
@@ -68,6 +33,45 @@ def checkRecursively(productCode, min, max):
         return checkRecursively(productCode, min, mid)
 
 
+def openFirstPage(productCode):
+    driver.delete_all_cookies()
+    driver.get(URL_CHECKOUT_CART)
+
+    # close dialog
+    closeButton = WebDriverWait(driver,     5).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "fancybox-close")))
+    closeButton.click()
+
+    WebDriverWait(driver,   5).until_not(
+        EC.presence_of_element_located((By.CLASS_NAME, 'fancybox-overlay')))
+
+    # input product code
+    productCodeField = driver.find_element_by_id('productReference')
+    productCodeField.send_keys(productCode)
+    productCodeField.send_keys(Keys.TAB)
+    # click button
+    confirmButton = driver.find_element_by_id(
+        'btnSubmitFastAddToCart').find_element_by_class_name('button')
+    confirmButton.click()
+
+    try:
+        driver.find_element_by_class_name('success-msg')
+        print('found')
+        driver.find_element_by_class_name('success-msg')
+        return True
+    except Exception:
+        print('not found')
+        return False
+
+
+def findProductAmount(productCode):
+    available = openFirstPage(productCode)
+    if (available):
+        return 10
+    else:
+        return 0
+
+
 OUTPUT_FILE = "output.txt"
 
 if os.path.exists(OUTPUT_FILE):
@@ -76,7 +80,7 @@ if os.path.exists(OUTPUT_FILE):
 with open('input.txt') as f:
     lines = f.readlines()
     for line in lines:
-        result = checkRecursively(line.rstrip(), 0, 9999)
+        result = findProductAmount(line.rstrip())
         print(line.rstrip(), result)
         with open(OUTPUT_FILE, "a+") as file:
             file.write(f'{line.rstrip()}\t{result} \n')
