@@ -16,14 +16,22 @@ URL_CHECKOUT_CART = "https://www.sophieparis.com/checkout/cart/"
 
 
 def checkProduct(productCode, amount):
-    return False
+    qty = driver.find_element_by_class_name('qty')
+    qty.clear()
+    qty.send_keys(str(amount))
+    qty.send_keys(Keys.ENTER)
+    try:
+        driver.find_element_by_class_name('item-msg')
+        return False
+    except Exception:
+        return True
 
 
 def checkRecursively(productCode, min, max):
     mid = (max + min) // 2
     try:
         check = checkProduct(productCode, mid)
-    except Exception as e:
+    except Exception:
         return 0
     if min == mid:
         return min
@@ -56,18 +64,15 @@ def openFirstPage(productCode):
 
     try:
         driver.find_element_by_class_name('success-msg')
-        print('found')
-        driver.find_element_by_class_name('success-msg')
         return True
     except Exception:
-        print('not found')
         return False
 
 
 def findProductAmount(productCode):
     available = openFirstPage(productCode)
     if (available):
-        return 10
+        return checkRecursively(productCode, 0, 2000)
     else:
         return 0
 
