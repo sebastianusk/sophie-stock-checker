@@ -1,3 +1,6 @@
+
+#!/usr/bin/python3
+
 from selenium import webdriver
 import os
 from selenium.webdriver.common.by import By
@@ -13,7 +16,6 @@ URL_CHECKOUT_CART = "https://www.sophieparis.com/checkout/cart/"
 
 
 def checkProduct(productCode, amount):
-    print(str(productCode) + str(amount))
     driver.delete_all_cookies()
     driver.get(URL_CHECKOUT_CART)
 
@@ -57,7 +59,6 @@ def checkRecursively(productCode, min, max):
     try:
         check = checkProduct(productCode, mid)
     except Exception as e:
-        print(str(e))
         return 0
     if min == mid:
         return min
@@ -72,13 +73,13 @@ OUTPUT_FILE = "output.txt"
 if os.path.exists(OUTPUT_FILE):
     os.remove(OUTPUT_FILE)
 
-output = open(OUTPUT_FILE, "w")
-
 with open('input.txt') as f:
     lines = f.readlines()
     for line in lines:
         result = checkRecursively(line.rstrip(), 0, 9999)
-        output.write(f'{line.rstrip()} amount: {result} \n')
+        print(line.rstrip(), result)
+        with open(OUTPUT_FILE, "a+") as file:
+            file.write(f'{line.rstrip()}\tamount: {result} \n')
 
-output.close()
+
 driver.close()
