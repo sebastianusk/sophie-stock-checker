@@ -79,7 +79,7 @@ with open('input.txt') as f:
         result = checkRecursively(line.rstrip(), 0, 9999)
         print(line.rstrip(), result)
         with open(OUTPUT_FILE, "a+") as file:
-            file.write(f'{line.rstrip()}\tamount: {result} \n')
+            file.write(f'{line.rstrip()}\t{result} \n')
 
 
 driver.close()
