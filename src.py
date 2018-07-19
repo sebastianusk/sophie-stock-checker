@@ -69,10 +69,13 @@ def openFirstPage(productCode):
         return False
 
 
-def findProductAmount(productCode):
+def findProductAmount(productCode, min, max):
     available = openFirstPage(productCode)
     if (available):
-        return checkRecursively(productCode, 0, 2000)
+        if (checkProduct(productCode, max)):
+            return max
+        else:
+            return checkRecursively(productCode, min, max)
     else:
         return 0
 
@@ -85,7 +88,7 @@ if os.path.exists(OUTPUT_FILE):
 with open('input.txt') as f:
     lines = f.readlines()
     for line in lines:
-        result = findProductAmount(line.rstrip())
+        result = findProductAmount(line.rstrip(), 0, 2000)
         print(line.rstrip(), result)
         with open(OUTPUT_FILE, "a+") as file:
             file.write(f'{line.rstrip()}\t{result} \n')
